@@ -10,6 +10,7 @@ type EnrichmentMsg struct {
 	EventStop        *string  `json:"event_stop"`
 	City             string   `json:"city"`
 	StreetType       *string  `json:"street_type"`
+	StreetTypeRaw    string   `json:"street_type_raw"`
 	Street           string   `json:"street"`
 	Service          string   `json:"service"`
 	HouseNumbers     []string `json:"house_numbers"`

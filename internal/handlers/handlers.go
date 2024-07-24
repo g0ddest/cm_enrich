@@ -87,6 +87,13 @@ func ProcessMessages(cfg *config.Config) {
 }
 
 func enrichAndSave(cfg *config.Config, msg *models.EnrichmentMsg) error {
+	streetType := ""
+	if msg.StreetType != nil {
+		streetType = *msg.StreetType
+	}
+	msg.StreetTypeRaw = streetType
+	msg.StreetType = nil
+
 	address := fmt.Sprintf("%s %s", msg.City, msg.Street)
 	enrichedData, err := callAddressAPI(cfg.AddressAPIURL, address)
 	if err != nil {
