@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"cm_enrich/internal/config"
 	"cm_enrich/internal/models"
+	"cm_enrich/internal/openai"
 	"cm_enrich/internal/postgres"
 	localsqs "cm_enrich/internal/sqs" // Переименован для избежания конфликта имен
 	"encoding/json"
@@ -115,7 +116,38 @@ func enrichAndSave(cfg *config.Config, msg *models.EnrichmentMsg) error {
 		if enrichedData == nil {
 			log.Printf("No enrichment data was found %s", address)
 		} else {
-			log.Printf("%d enrichment data was found %s", len(enrichedData), address)
+			log.Printf("%d enrichment data was found %s, asking AI", len(enrichedData), address)
+
+			var fullAddresses []string
+			for _, addr := range enrichedData {
+				fullAddresses = append(fullAddresses, addr.FullAddress)
+			}
+
+			selectedVariant, err := openai.CallOpenAI(
+				cfg.OpenAIAPIKey,
+				fmt.Sprintf("%s %s %s", msg.City, func() string {
+					if msg.StreetType != nil {
+						return *msg.StreetType
+					}
+					return ""
+				}(), msg.Street),
+				fullAddresses,
+			)
+			if err != nil {
+				log.Printf("Error calling OpenAI: %v", err)
+			} else {
+				log.Printf("AI selected variant: %s", fullAddresses[selectedVariant])
+				addr := enrichedData[selectedVariant]
+				msg.RegionKladr = addr.Region.Kladr
+				msg.RegionName = addr.Region.Name
+				msg.RegionType = addr.Region.Type
+				msg.StreetKladr = addr.Street.Kladr
+				msg.StreetName = addr.Street.Name
+				msg.StreetTypeFull = addr.Street.TypeFull
+				msg.CityKladr = addr.City.Kladr
+				msg.CityName = addr.City.Name
+				msg.CityType = addr.City.Type
+			}
 		}
 	}
 

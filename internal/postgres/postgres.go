@@ -20,6 +20,18 @@ func SaveToPostgres(connStr string, msg *models.EnrichmentMsg) error {
 	houseNumbers := strings.Join(msg.HouseNumbers, ",")
 	houseRanges := strings.Join(msg.HouseRanges, ",")
 
+	var eventStart, eventStop interface{}
+	if msg.EventStart != "" {
+		eventStart = msg.EventStart
+	} else {
+		eventStart = nil
+	}
+	if msg.EventStop != nil && *msg.EventStop != "" {
+		eventStop = *msg.EventStop
+	} else {
+		eventStop = nil
+	}
+
 	query := `INSERT INTO communal_outages (
 		message_id, incident_id, organization, short_description, event, event_start, event_stop,
 		city, street_type, street_type_raw, street, service, house_numbers, house_ranges,
@@ -30,7 +42,7 @@ func SaveToPostgres(connStr string, msg *models.EnrichmentMsg) error {
 	)`
 
 	_, err = conn.Exec(context.Background(), query,
-		msg.MP, msg.ID, msg.Organization, msg.ShortDescription, msg.Event, msg.EventStart, msg.EventStop,
+		msg.MP, msg.ID, msg.Organization, msg.ShortDescription, msg.Event, eventStart, eventStop,
 		msg.City, msg.StreetType, msg.StreetTypeRaw, msg.Street, msg.Service, houseNumbers, houseRanges,
 		msg.RegionKladr, msg.RegionName, msg.RegionType, msg.StreetKladr, msg.StreetName,
 		msg.CityKladr, msg.CityName, msg.CityType,

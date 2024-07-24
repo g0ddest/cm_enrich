@@ -9,6 +9,7 @@ type Config struct {
 	AWSSecretAccessKey string
 	PostgresConnStr    string
 	AddressAPIURL      string
+	OpenAIAPIKey       string
 }
 
 func LoadConfig() (*Config, error) {
@@ -19,5 +20,6 @@ func LoadConfig() (*Config, error) {
 		AWSSecretAccessKey: os.Getenv("AWS_SECRET_ACCESS_KEY"),
 		PostgresConnStr:    os.Getenv("POSTGRES_CONN_STR"),
 		AddressAPIURL:      os.Getenv("ADDRESS_API_URL"),
+		OpenAIAPIKey:       os.Getenv("OPENAI_API_KEY"),
 	}, nil
 }
