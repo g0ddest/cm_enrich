@@ -24,6 +24,15 @@ type AddressResponse struct {
 	Kladr       string `json:"kladr"`
 	Region      Region `json:"region"`
 	Street      Street `json:"street"`
+	City        City   `json:"city"`
+}
+
+type City struct {
+	Kladr        string `json:"kladr"`
+	Name         string `json:"name"`
+	NameWithType string `json:"name_with_type"`
+	Type         string `json:"type"`
+	TypeFull     string `json:"type_full"`
 }
 
 type Region struct {
@@ -86,17 +95,15 @@ func enrichAndSave(cfg *config.Config, msg *models.EnrichmentMsg) error {
 
 	if enrichedData != nil && len(enrichedData) == 1 {
 		addr := enrichedData[0]
-		msg.FullAddress = addr.FullAddress
-		msg.Kladr = addr.Kladr
 		msg.RegionKladr = addr.Region.Kladr
 		msg.RegionName = addr.Region.Name
-		msg.RegionNameWithType = addr.Region.NameWithType
 		msg.RegionType = addr.Region.Type
-		msg.RegionTypeFull = addr.Region.TypeFull
 		msg.StreetKladr = addr.Street.Kladr
 		msg.StreetName = addr.Street.Name
-		msg.StreetNameWithType = addr.Street.NameWithType
 		msg.StreetTypeFull = addr.Street.TypeFull
+		msg.CityKladr = addr.City.Kladr
+		msg.CityName = addr.City.Name
+		msg.CityType = addr.City.Type
 	} else {
 		if enrichedData == nil {
 			log.Printf("No enrichment data was found %s", address)
