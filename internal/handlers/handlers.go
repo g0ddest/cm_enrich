@@ -73,7 +73,7 @@ func ProcessMessages(cfg *config.Config) {
 				continue
 			}
 
-			if err := enrichAndSave(cfg, &enrichmentMsg); err != nil {
+			if err := enrichAndSave(cfg, sqsSvc, &enrichmentMsg); err != nil {
 				log.Printf("Error processing message: %v", err)
 				continue
 			}
@@ -87,7 +87,7 @@ func ProcessMessages(cfg *config.Config) {
 	}
 }
 
-func enrichAndSave(cfg *config.Config, msg *models.EnrichmentMsg) error {
+func enrichAndSave(cfg *config.Config, sqsSvc *sqs.SQS, msg *models.EnrichmentMsg) error {
 	streetType := ""
 	if msg.StreetType != nil {
 		streetType = *msg.StreetType
@@ -153,6 +153,16 @@ func enrichAndSave(cfg *config.Config, msg *models.EnrichmentMsg) error {
 
 	if err := postgres.SaveToPostgres(cfg.PostgresConnStr, msg); err != nil {
 		return fmt.Errorf("error saving to Postgres: %v", err)
+	}
+
+	msgBody, err := json.Marshal(msg)
+	if err != nil {
+		log.Printf("Error marshaling enrichment message: %v", err)
+	}
+
+	err = localsqs.SendMessage(sqsSvc, cfg.SQSNotifyQueueURL, string(msgBody))
+	if err != nil {
+		log.Printf("Error sending message to queue: %v", err)
 	}
 
 	return nil

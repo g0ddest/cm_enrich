@@ -27,6 +27,15 @@ func ReceiveMessages(sqsSvc *sqs.SQS, queueURL string) ([]*sqs.Message, error) {
 	return result.Messages, nil
 }
 
+func SendMessage(sqsSvc *sqs.SQS, queueURL string, message string) error {
+	_, err := sqsSvc.SendMessage(&sqs.SendMessageInput{
+		QueueUrl:    aws.String(queueURL),
+		MessageBody: aws.String(message),
+	})
+
+	return err
+}
+
 func DeleteMessage(sqsSvc *sqs.SQS, queueURL string, msg *sqs.Message) error {
 	_, err := sqsSvc.DeleteMessage(&sqs.DeleteMessageInput{
 		QueueUrl:      aws.String(queueURL),
