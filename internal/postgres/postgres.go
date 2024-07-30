@@ -39,7 +39,7 @@ func SaveToPostgres(connStr string, msg *models.EnrichmentMsg) error {
 		city_kladr, city_name, city_type
 	) VALUES (
 		$1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22
-	)`
+	) ON CONFLICT (message_id) DO NOTHING`
 
 	_, err = conn.Exec(context.Background(), query,
 		msg.MP, msg.ID, msg.Organization, msg.ShortDescription, msg.Event, eventStart, eventStop,
